@@ -12,7 +12,7 @@ class ContactManager {
   }
 
   attachListeners() {
-    this.searchBar.addEventListener("input", this.displaySearchedContacts.bind(this));
+    this.searchBar.addEventListener("input", this.displayContacts.bind(this));
     this.contactsDisplay.addEventListener("click", this.handleDelete.bind(this));
   }
 
@@ -32,60 +32,61 @@ class ContactManager {
     }
   }
 
-  displayNoContacts() {
-    let noContacts = document.createElement('p');
-    noContacts.classList.add("no-contacts");
-    this.contactsDisplay.appendChild(noContacts);
-    noContacts.textContent = "No contacts yet. Go ahead and add one!";
-  }
-
-  async displayContacts(searchQuery) {
+  async displayContacts() {
+    let searchQuery = this.searchBar.value;
     this.contacts = await this.fetchContacts(searchQuery);
 
-    if (this.contacts.length < 1) {
-      this.displayNoContacts();
-    } else {
-      let contactHandlebar = document.getElementById("contact-template");
-      let contactTemplate = Handlebars.compile((contactHandlebar).innerHTML);
-      this.contactsDisplay.innerHTML = contactTemplate({contacts: this.contacts});
-    }
-  }
+    let contactHandlebar = document.getElementById("contact-template");
+    let contactTemplate = Handlebars.compile((contactHandlebar).innerHTML);
 
-  displaySearchedContacts() {
-    let searchQuery = this.searchBar.value;
-    console.log(searchQuery);
-    this.displayContacts(searchQuery);
-  }
-
-  findIdByName(name) {
-    let contact = this.contacts.find(contact => {
-      
+    this.contactsDisplay.innerHTML = contactTemplate({
+      contacts: this.contacts,
+      contactsPresent: (this.contacts.length > 0)
     });
+  
   }
 
-  handleDelete(e) {
+  findContactId(contactItem) {
+    let name = contactItem.firstElementChild.innerText.trim();
+    let phoneNumber = contactItem.getElementsByTagName('dd')[0].innerText;
+    let email = contactItem.getElementsByTagName('dd')[1].innerText;
+
+    let contact = this.contacts.find(contact => {
+      return (contact.full_name === name) &&
+             (contact.phone_number === phoneNumber) &&
+             (contact.email === email);
+    });
+
+    return contact ? contact.id : null;
+  }
+
+  async handleDelete(e) {
+    e.preventDefault();
     if (!e.target.classList.contains("delete-btn")) return;
 
     if (confirm('Are you sure you want to delete this contact?')) {
       console.log("trying to delete now");
-      let contactItem = e.target.parentNode;
-      let name = contactItem.firstElementChild.textContent.trim();
-      let email = contactItem.
-      console.log(email);
-      this.deleteContact(name);
-    } else {
-      console.log("delete action canceled");
-      return;
+      let id = this.findContactId(e.target.parentNode);
+      let deleted = await this.deleteContact(id);
+      if (deleted) {
+        this.displayContacts();
+      } else {
+        console.log("delete action canceled");
+        return;
+      }
     }
   }
 
   async deleteContact(id) {
-    console.log(name);
+    let deleted = await fetch(`http://localhost:3000/api/contacts/${id}`, { method: 'DELETE' });
 
-    // make the AJAX call to delete this contact from the API
-        // need the id
-        // use this.contacts to find contact with the correct name
-        // get the id from this contact obj
+    if (deleted.ok) {
+      console.log("call to delete contact succeeded");
+      return true;
+    } else {
+      console.log("call to delete contact failed");
+      return false;
+    }
   }
 }
 

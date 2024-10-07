@@ -28,20 +28,27 @@
     </section>
 
     <script id="contact-template" type='text/x-handlebars'>
-      <ul id="contact-list">
-        {{#each contacts}}
-        <li class="contact">
-          <h1>{{full_name}}</h2>
-          <dl class="contact-info">
-            <dt>Phone Number:</dt>
-            <dd>{{phone_number}}</dd>
-            <dt>Email:</dt>
-            <dd>{{email}}</dd>
-          </dl>
-          <a href=#Edit class="edit-btn">Edit</a>
-          <a href=#Delete class="delete-btn">Delete</a>
-        </li>
-        {{/each}}
+        {{#if contactsPresent}}
+        <ul id="contact-list">
+          {{#each contacts}}
+          <li class="contact">
+            <h1>{{full_name}}</h2>
+            <dl class="contact-info">
+              <dt>Phone Number:</dt>
+              <dd>{{phone_number}}</dd>
+              <dt>Email:</dt>
+              <dd>{{email}}</dd>
+            </dl>
+            <a href=#Edit class="edit-btn">Edit</a>
+            <a href=#Delete class="delete-btn">Delete</a>
+          </li>
+          {{/each}}
+        {{else}}
+        <p id=no-contacts>No contacts yet. Go ahead and add one!</p>
+        {{/if}}
+
+
+        
     </script>
 
   </main>

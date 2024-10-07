@@ -60,8 +60,15 @@ main {
   border-radius: 4px;
 }
 
-.no-contacts {
+#no-contacts {
   text-align: center;
+  font-size: 20px;
+  font-weight: 500;
+  padding: 30px;
+  margin-bottom: 24px;
+  background-color: #f5f5f5;
+  border: 1px solid #e3e3e3;
+  border-radius: 4px;
 }
 
 #contact-list {
