@@ -52,7 +52,7 @@ main {
   background-color: #563d7c;
 }
 
-#search {
+#search-bar {
   padding: 6px 12px;
   font-size: 14px;
   background-color: #fff;
@@ -99,7 +99,7 @@ main {
   padding-bottom: 3px;
 }
 
-#edit-btn, #delete-btn {
+.edit-btn, .delete-btn {
   text-decoration: none;
   color: #563d7c;
   background-color: transparent;
@@ -111,7 +111,7 @@ main {
   cursor: pointer;
 }
 
-#edit-btn:hover, #delete-btn:hover {
+.edit-btn:hover, .delete-btn:hover {
   color: #fff;
   background-color: #563d7c;
 }

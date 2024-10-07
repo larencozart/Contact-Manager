@@ -20,30 +20,29 @@
     <section id="utilities-bar">
       <!-- Add Contact Button & Search Bar-->
       <a href="#" id="add-contact-btn">Add Contact</a>
-      <input type="text" id="search" name="search" placeholder="Search">
+      <input type="text" id="search-bar" name="search-bar" placeholder="Search">
     </section>
       
     <section id="contacts-display">
       <!-- Contacts: all or searched ones-->
-  
-      <script id="contact-template" type='text/x-handlebars'>
-        <ul id="contact-list">
-          {{#each contacts}}
-          <li class="contact">
-            <h1>{{full_name}}</h2>
-            <dl class="contact-info">
-              <dt>Phone Number:</dt>
-              <dd>{{phone_number}}</dd>
-              <dt>Email:</dt>
-              <dd>{{email}}</dd>
-            </dl>
-            <a href=#Edit id="edit-btn">Edit</a>
-            <a href=#Delete id="delete-btn">Delete</a>
-          </li>
-          {{/each}}
-      </script>
-
     </section>
+
+    <script id="contact-template" type='text/x-handlebars'>
+      <ul id="contact-list">
+        {{#each contacts}}
+        <li class="contact">
+          <h1>{{full_name}}</h2>
+          <dl class="contact-info">
+            <dt>Phone Number:</dt>
+            <dd>{{phone_number}}</dd>
+            <dt>Email:</dt>
+            <dd>{{email}}</dd>
+          </dl>
+          <a href=#Edit class="edit-btn">Edit</a>
+          <a href=#Delete class="delete-btn">Delete</a>
+        </li>
+        {{/each}}
+    </script>
 
   </main>
   <footer>
