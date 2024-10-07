@@ -21,10 +21,28 @@
       <!-- Add Contact Button & Search Bar-->
       <a href="#" id="add-contact-btn">Add Contact</a>
       <input type="text" id="search" name="search" placeholder="Search">
+    </section>
+      
+    <section id="contacts-display">
+      <!-- Contacts: all or searched ones-->
+  
+      <script id="contact-template" type='text/x-handlebars'>
+        <ul id="contact-list">
+          {{#each contacts}}
+          <li class="contact">
+            <h1>{{full_name}}</h2>
+            <dl class="contact-info">
+              <dt>Phone Number:</dt>
+              <dd>{{phone_number}}</dd>
+              <dt>Email:</dt>
+              <dd>{{email}}</dd>
+            </dl>
+          </li>
+          {{/each}}
+      </script>
 
     </section>
-      <!-- Contacts: all or searched ones-->
-    <section></section>
+
   </main>
   <footer>
     <p>Developed by <a href="http://www.devsaran.com">Devsaran.com</a> and <a href="http://www.239listing.com">239 Listing Real Estate</a>.</p>
