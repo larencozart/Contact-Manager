@@ -27,6 +27,40 @@
       <!-- Contacts: all or searched ones-->
     </section>
 
+    <section id="new-contact" class="hidden">
+      <h1 id="form-header">Create Contact</h1>
+      <form id="form-display">
+        <dl>
+          <dt>
+            <label>Full Name:</label>
+          </dt>
+          <dd>
+            <input type="text">
+          </dd>
+          <dt>
+            <label>Email Address:</label>
+          </dt>
+          <dd>
+            <input type="text">
+          </dd>
+          <dt>
+            <label>Phone Number:</label>
+          </dt>
+          <dd>
+            <input type="text">
+          </dd>
+          <dt>
+            <label>Tags:</label>
+          </dt>
+          <dd>
+            <input type="text">
+          </dd>
+        </dl>
+        <a href="#Submit" class="submit-btn">Submit</a>
+        <a href="#Cancel" class="cancel-btn">Cancel</a>
+      </form>
+    </section>
+
     <section id="edit-contact" class="hidden">
     </section>
 
@@ -49,32 +83,29 @@
         {{else}}
         <p id=no-contacts>No contacts yet. Go ahead and add one!</p>
         {{/if}}
-
-
-        
     </script>
 
     <script id="edit-template" type="text/x-handlebars">
-      <h1 id="edit-header">Edit Contact</h1>
+      <h1 id="form-header">Edit Contact</h1>
       <form id="form-display">
         <dl>
           <dt>
             <label>Full Name:</label>
           </dt>
           <dd>
-            <input type="text" value={{name}}>
+            <input type="text" value="{{full_name}}">
           </dd>
           <dt>
             <label>Email Address:</label>
           </dt>
           <dd>
-            <input type="text" value={{email}}>
+            <input type="text" value="{{email}}">
           </dd>
           <dt>
             <label>Phone Number:</label>
           </dt>
           <dd>
-            <input type="text" value={{phoneNumber}}>
+            <input type="text" value="{{phone_number}}">
           </dd>
         </dl>
         <a href="#Submit" class="submit-btn">Submit</a>
