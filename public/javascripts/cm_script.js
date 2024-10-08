@@ -2,9 +2,10 @@
 
 class ContactManager {
    constructor() {
-    // set properties and call necessary methods
     this.contactsDisplay = document.getElementById('contacts-display');
     this.searchBar = document.getElementById('search-bar');
+    this.utilitiesBar = document.getElementById('utilities-bar');
+    this.editContactForm = document.getElementById('edit-contact');
     this.contacts = [];
 
     this.displayContacts();
@@ -13,7 +14,10 @@ class ContactManager {
 
   attachListeners() {
     this.searchBar.addEventListener("input", this.displayContacts.bind(this));
-    this.contactsDisplay.addEventListener("click", this.handleDelete.bind(this));
+    this.contactsDisplay.addEventListener("click", this.handleDeleteButton.bind(this));
+    this.contactsDisplay.addEventListener("click", this.handleEditButton.bind(this));
+    this.editContactForm.addEventListener("click", this.handleSubmission.bind(this));
+    this.editContactForm.addEventListener("click", this.handleCancelButton.bind(this));
   }
 
   async fetchContacts(searchQuery) {
@@ -60,18 +64,18 @@ class ContactManager {
     return contact ? contact.id : null;
   }
 
-  async handleDelete(e) {
+  async handleDeleteButton(e) {
     e.preventDefault();
     if (!e.target.classList.contains("delete-btn")) return;
 
     if (confirm('Are you sure you want to delete this contact?')) {
-      console.log("trying to delete now");
-      let id = this.findContactId(e.target.parentNode);
+      let contact = e.target.parentNode;
+      let id = this.findContactId(contact);
       let deleted = await this.deleteContact(id);
       if (deleted) {
         this.displayContacts();
       } else {
-        console.log("delete action canceled");
+        console.log("delete action failed");
         return;
       }
     }
@@ -87,6 +91,50 @@ class ContactManager {
       console.log("call to delete contact failed");
       return false;
     }
+  }
+
+  displayEditForm(contactInfo) {
+    let editHandlebar = document.getElementById('edit-template');
+    let editTemplate = Handlebars.compile(editHandlebar.innerHTML);
+
+    console.log('trying to display edit form');
+    this.utilitiesBar.classList.add("hidden");
+    this.contactsDisplay.classList.add("hidden");
+    this.editContactForm.classList.remove("hidden");
+    this.editContactForm.innerHTML = editTemplate({...contactInfo});
+  }
+
+  async handleEditButton(e) {
+    e.preventDefault();
+    if (!e.target.classList.contains("edit-btn")) return; 
+
+    let contact = e.target.parentNode;
+    let name = contact.firstElementChild.innerText.trim();
+    let phoneNumber = contact.getElementsByTagName('dd')[0].innerText;
+    let email = contact.getElementsByTagName('dd')[1].innerText;
+
+    this.displayEditForm({name, phoneNumber, email});
+  }
+
+  async editContact() {
+    
+  }
+
+  handleSubmission(e) {
+    e.preventDefault();
+    if (!e.target.classList.contains("submit-btn")) return;
+
+    // make post request to update contact data
+    // hide our form
+    // show our contacts display (with updated contact info)
+  }
+
+  handleCancelButton(e) {
+    e.preventDefault();
+    if (!e.target.classList.contains("cancel-btn")) return;
+
+    e.currentTarget.classList.add("hidden");
+    this.contactsDisplay.classList.remove("hidden");
   }
 }
 

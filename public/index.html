@@ -27,6 +27,9 @@
       <!-- Contacts: all or searched ones-->
     </section>
 
+    <section id="edit-contact" class="hidden">
+    </section>
+
     <script id="contact-template" type='text/x-handlebars'>
         {{#if contactsPresent}}
         <ul id="contact-list">
@@ -49,6 +52,34 @@
 
 
         
+    </script>
+
+    <script id="edit-template" type="text/x-handlebars">
+      <h1 id="edit-header">Edit Contact</h1>
+      <form id="form-display">
+        <dl>
+          <dt>
+            <label>Full Name:</label>
+          </dt>
+          <dd>
+            <input type="text" value={{name}}>
+          </dd>
+          <dt>
+            <label>Email Address:</label>
+          </dt>
+          <dd>
+            <input type="text" value={{email}}>
+          </dd>
+          <dt>
+            <label>Phone Number:</label>
+          </dt>
+          <dd>
+            <input type="text" value={{phoneNumber}}>
+          </dd>
+        </dl>
+        <a href="#Submit" class="submit-btn">Submit</a>
+        <a href="#Cancel" class="cancel-btn">Cancel</a>
+      </form>
     </script>
 
   </main>

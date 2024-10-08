@@ -123,6 +123,59 @@ main {
   background-color: #563d7c;
 }
 
+.hidden {
+  display: none;
+}
+
+#edit-header {
+  text-align: center;
+  font-size: 30px;
+  font-weight: 500;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 9px;
+  margin: 40px 0 20px;
+}
+
+#form-display label {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: bolder;
+  margin-left: 20px;
+}
+
+#form-display input {
+  font-size: 14px;
+  color: #555;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  margin-left: -20px;
+  margin-bottom: 20px;
+}
+
+.submit-btn, .cancel-btn {
+  display: inline-block;
+  font-size: 18px;
+  text-align: center;
+  text-decoration: none;
+  color: #563d7c;
+  background-color: transparent;
+  padding: 10px 16px;
+  border: 1px solid #563d7c;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 20px;
+  margin-right: 200px;
+}
+
+.submit-btn:hover, .cancel-btn:hover {
+  color: #fff;
+  background-color: #563d7c;
+}
+
 footer {
   text-align: center;
   font-size: 14px;
