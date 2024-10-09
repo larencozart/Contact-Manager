@@ -21,6 +21,7 @@
       <!-- Add Contact Button & Search Bar-->
       <a href="#" id="add-contact-btn">Add Contact</a>
       <input type="text" id="search-bar" name="search-bar" placeholder="Search">
+      <a id="tag-dropdown">Tags</a>
     </section>
       
     <section id="contacts-display">
@@ -50,7 +51,7 @@
             <input type="text">
           </dd>
           <dt>
-            <label>Tags:</label>
+            <label>Tags (separate tags with a comma):</label>
           </dt>
           <dd>
             <input type="text">
@@ -75,6 +76,11 @@
               <dd>{{phone_number}}</dd>
               <dt>Email:</dt>
               <dd>{{email}}</dd>
+              {{#if tagsPresent}}
+                {{#each tags}}
+                <p class="tag">{{this}}</p>
+                {{/each}}
+              {{/if}}
             </dl>
             <a href=#Edit class="edit-btn">Edit</a>
             <a href=#Delete class="delete-btn">Delete</a>
@@ -107,10 +113,25 @@
           <dd>
             <input type="text" value="{{phone_number}}">
           </dd>
+          <dt>
+            <label>Tags (separate tags with a comma):</label>
+          </dt>
+          <dd>
+            <input type="text" value="{{tags}}">
+          </dd>
         </dl>
         <a href="#Submit" class="submit-btn">Submit</a>
         <a href="#Cancel" class="cancel-btn">Cancel</a>
       </form>
+    </script>
+
+    <script id="tag-list-template" type="text/x-handlebars">
+      <ul id="tag-list">
+        <a id="add-tag">+ Add Tag</a>
+        {{#each tags}}
+          <li>{{this}}</li>
+        {{/each}}
+      </ul>
     </script>
 
   </main>

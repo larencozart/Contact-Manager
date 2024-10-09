@@ -8,8 +8,10 @@ class ContactManager {
     this.addContactButton = document.getElementById('add-contact-btn');
     this.editContactForm = document.getElementById('edit-contact');
     this.newContactForm = document.getElementById('new-contact');
-    this.contacts = [];
+    this.tagDropdown = document.getElementById('tag-dropdown');
+    this.contacts = ["work", "friends",];
     this.currentContact = null;
+    this.tags = [];
 
     this.displayContacts();
     this.attachListeners();
@@ -27,6 +29,15 @@ class ContactManager {
     this.addContactButton.addEventListener("click", this.displayNewContactForm.bind(this));
     this.newContactForm.addEventListener("click", this.submitNewContact.bind(this));
     this.newContactForm.addEventListener("click", this.handleCancelButton.bind(this));
+
+    this.tagDropdown.addEventListener("mouseover", this.handleTagMouseOver.bind(this));
+  }
+
+  updateTagsProperty(contacts) {
+    contacts.forEach(contact => {
+      contact.tags = contact.tags ? contact.tags.split(",") : [];
+      contact.tagsPresent = contact.tags.length > 0;
+    });
   }
 
   async fetchContacts(searchQuery) {
@@ -48,6 +59,7 @@ class ContactManager {
   async displayContacts() {
     let searchQuery = this.searchBar.value;
     this.contacts = await this.fetchContacts(searchQuery);
+    this.updateTagsProperty(this.contacts);
 
     let contactHandlebar = document.getElementById("contact-template");
     let contactTemplate = Handlebars.compile((contactHandlebar).innerHTML);
@@ -120,7 +132,7 @@ class ContactManager {
         full_name: values[0],
         email: values[1],
         phone_number: values[2],
-        tags: this.currentContact.tags
+        tags: values[3]
       })
     });
 
@@ -175,7 +187,7 @@ class ContactManager {
         full_name: values[0],
         email: values[1],
         phone_number: values[2],
-        tags: ""
+        tags: values[3]
       })
     });
 
@@ -201,6 +213,18 @@ class ContactManager {
       throw new Error("Failed to make PUT request");
     }
   }
+
+  displayTagList() {
+    let tagListHandlebar = document.getElementById('tag-list-template');
+
+    this.utilitiesBar.appendChild()
+  }
+
+  handleTagMouseOver(e) {
+    console.log("mouse went over tag dropdown");
+    this.displayTagList();
+  }
+
 }
 
 document.addEventListener("DOMContentLoaded", () => {
