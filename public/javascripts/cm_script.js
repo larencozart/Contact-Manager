@@ -9,17 +9,18 @@ class ContactManager {
     this.editContactForm = document.getElementById('edit-contact');
     this.newContactForm = document.getElementById('new-contact');
     this.tagDropdown = document.getElementById('tag-dropdown');
-    this.contacts = ["work", "friends",];
+    this.tagList = null;
+    this.contacts = [];
     this.currentContact = null;
-    this.tags = [];
+    this.tags = ["LaunchSchool", "Friend", "Book Club", "work"];
 
+    this.createTagList();
     this.displayContacts();
     this.attachListeners();
   }
 
   attachListeners() {
     this.searchBar.addEventListener("input", this.displayContacts.bind(this));
-
     this.contactsDisplay.addEventListener("click", this.handleDeleteButton.bind(this));
 
     this.contactsDisplay.addEventListener("click", this.displayEditForm.bind(this));
@@ -30,7 +31,19 @@ class ContactManager {
     this.newContactForm.addEventListener("click", this.submitNewContact.bind(this));
     this.newContactForm.addEventListener("click", this.handleCancelButton.bind(this));
 
-    this.tagDropdown.addEventListener("mouseover", this.handleTagMouseOver.bind(this));
+    this.tagDropdown.addEventListener("mouseover", this.displayTagList.bind(this));
+    this.tagDropdown.addEventListener("mouseleave", this.hideTagList.bind(this));
+
+    this.tagList.addEventListener("click", this.addNewTag.bind(this));
+    this.tagList.addEventListener("click", this.searchOnTag.bind(this));
+  }
+
+  createTagList() {
+    let tagListHandlebar = document.getElementById('tag-list-template');
+    let tagListTemplate = Handlebars.compile(tagListHandlebar.innerHTML);
+
+    this.tagDropdown.insertAdjacentHTML("beforeend", tagListTemplate({tags: this.tags}))
+    this.tagList = this.tagDropdown.lastElementChild;
   }
 
   updateTagsProperty(contacts) {
@@ -40,26 +53,43 @@ class ContactManager {
     });
   }
 
+  filteredContactsByName(contacts, searchQuery) {
+    return contacts.filter(contact => {
+      let name = contact.full_name.toLowerCase();
+      searchQuery = searchQuery.toLowerCase().trim();
+      return name.includes(searchQuery);
+    });
+  }
+
+  filterContactsByTag(contacts, searchQuery) {
+    searchQuery = searchQuery.toLowerCase().trim().slice(1);
+
+    let filteredContacts = contacts.filter(contact => {
+      let tags = contact.tags.map(tag => tag.toLowerCase().trim());
+      return tags.includes(searchQuery);
+    });
+    
+    return filteredContacts;
+  }
+
   async fetchContacts(searchQuery) {
     let response = await fetch("http://localhost:3000/api/contacts");
     let contacts = await response.json();
 
-    if (searchQuery) {
-      let filteredContacts = contacts.filter(contact => {
-        let name = contact.full_name.toLowerCase();
-        searchQuery = searchQuery.toLowerCase().trim();
-        return name.includes(searchQuery);
-      });
-      return filteredContacts;
-    } else {
+    this.updateTagsProperty(contacts);
+
+    if (!searchQuery) {
       return contacts;
-    }
+    } else if (!searchQuery.startsWith(':')) {
+      return this.filteredContactsByName(contacts, searchQuery);
+    } else if (searchQuery.startsWith(':')) {
+      return this.filterContactsByTag(contacts, searchQuery);
+    } 
   }
 
   async displayContacts() {
     let searchQuery = this.searchBar.value;
     this.contacts = await this.fetchContacts(searchQuery);
-    this.updateTagsProperty(this.contacts);
 
     let contactHandlebar = document.getElementById("contact-template");
     let contactTemplate = Handlebars.compile((contactHandlebar).innerHTML);
@@ -68,7 +98,6 @@ class ContactManager {
       contacts: this.contacts,
       contactsPresent: (this.contacts.length > 0)
     });
-  
   }
 
   findContact(contactItem) {
@@ -215,14 +244,27 @@ class ContactManager {
   }
 
   displayTagList() {
-    let tagListHandlebar = document.getElementById('tag-list-template');
-
-    this.utilitiesBar.appendChild()
+    this.tagList.classList.remove("hidden");
   }
 
-  handleTagMouseOver(e) {
-    console.log("mouse went over tag dropdown");
-    this.displayTagList();
+  hideTagList() {
+    this.tagList.classList.add("hidden");
+  }
+
+  addNewTag(e) {
+    e.preventDefault();
+    if (!e.target.classList.contains("add-tag")) return;
+
+    console.log("clicked on tag");
+    // add a pop up input here to enter a new tag
+    // update taglist & display
+  }
+
+  async searchOnTag(e) {
+    let tag = e.target.innerText;
+    this.searchBar.value = `:${tag}`;
+
+    await this.displayContacts();
   }
 
 }
