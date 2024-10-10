@@ -1,10 +1,10 @@
 [
   {
     "id": 1,
-    "full_name": "Naveed Fida",
+    "full_name": "Naveed Fida edited",
     "email": "nf@example.com",
     "phone_number": "12345678901",
-    "tags": "work,friend"
+    "tags": "work"
   },
   {
     "id": 2,
@@ -19,5 +19,12 @@
     "email": "ph@example.com",
     "phone_number": "54321098761",
     "tags": ""
+  },
+  {
+    "full_name": "Laren Cozart",
+    "phone_number": "9545484449",
+    "email": "larencozart@gmail.com",
+    "tags": "LaunchSchool",
+    "id": 4
   }
 ]

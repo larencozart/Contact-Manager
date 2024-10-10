@@ -9,14 +9,13 @@ class ContactManager {
     this.editContactForm = document.getElementById('edit-contact');
     this.newContactForm = document.getElementById('new-contact');
     this.tagDropdown = document.getElementById('tag-dropdown');
+    this.newTagForm = document.getElementById('new-tag');
     this.tagList = null;
     this.contacts = [];
     this.currentContact = null;
-    this.tags = ["LaunchSchool", "Friend", "Book Club", "work"];
+    this.allTags = [];
 
-    this.createTagList();
-    this.displayContacts();
-    this.attachListeners();
+    this.renderHomePage();
   }
 
   attachListeners() {
@@ -34,7 +33,6 @@ class ContactManager {
     this.tagDropdown.addEventListener("mouseover", this.displayTagList.bind(this));
     this.tagDropdown.addEventListener("mouseleave", this.hideTagList.bind(this));
 
-    this.tagList.addEventListener("click", this.addNewTag.bind(this));
     this.tagList.addEventListener("click", this.searchOnTag.bind(this));
   }
 
@@ -42,15 +40,20 @@ class ContactManager {
     let tagListHandlebar = document.getElementById('tag-list-template');
     let tagListTemplate = Handlebars.compile(tagListHandlebar.innerHTML);
 
-    this.tagDropdown.insertAdjacentHTML("beforeend", tagListTemplate({tags: this.tags}))
+    this.tagDropdown.insertAdjacentHTML("beforeend", tagListTemplate({tags: this.allTags}))
     this.tagList = this.tagDropdown.lastElementChild;
   }
 
-  updateTagsProperty(contacts) {
-    contacts.forEach(contact => {
+  updateTagsProperty() {
+    this.contacts.forEach(contact => {
       contact.tags = contact.tags ? contact.tags.split(",") : [];
       contact.tagsPresent = contact.tags.length > 0;
     });
+  }
+
+  getAllTags() {
+    let tags = this.contacts.map(contact => contact.tags).flat();
+    this.allTags = Array.from(new Set(tags));
   }
 
   filteredContactsByName(contacts, searchQuery) {
@@ -72,31 +75,40 @@ class ContactManager {
     return filteredContacts;
   }
 
-  async fetchContacts(searchQuery) {
-    let response = await fetch("http://localhost:3000/api/contacts");
-    let contacts = await response.json();
-
-    this.updateTagsProperty(contacts);
-
+  filterContacts(searchQuery) {
     if (!searchQuery) {
-      return contacts;
+      return this.contacts.slice();
     } else if (!searchQuery.startsWith(':')) {
-      return this.filteredContactsByName(contacts, searchQuery);
+      return this.filteredContactsByName(this.contacts.slice(), searchQuery);
     } else if (searchQuery.startsWith(':')) {
-      return this.filterContactsByTag(contacts, searchQuery);
+      return this.filterContactsByTag(this.contacts.slice(), searchQuery);
     } 
   }
 
-  async displayContacts() {
+  async fetchContacts() {
+    let response = await fetch("http://localhost:3000/api/contacts");
+    this.contacts = await response.json();
+  }
+
+  async renderHomePage() {  // figure out a better name for this function
+    await this.fetchContacts();
+    this.updateTagsProperty();
+    this.getAllTags();
+    this.createTagList();
+    this.displayContacts();
+    this.attachListeners();
+  }
+
+  displayContacts() {
     let searchQuery = this.searchBar.value;
-    this.contacts = await this.fetchContacts(searchQuery);
+    let filteredContacts = this.filterContacts(searchQuery);
 
     let contactHandlebar = document.getElementById("contact-template");
     let contactTemplate = Handlebars.compile((contactHandlebar).innerHTML);
 
     this.contactsDisplay.innerHTML = contactTemplate({
-      contacts: this.contacts,
-      contactsPresent: (this.contacts.length > 0)
+      contacts: filteredContacts,
+      contactsPresent: (filteredContacts.length > 0)
     });
   }
 
@@ -149,8 +161,20 @@ class ContactManager {
     this.utilitiesBar.classList.toggle("hidden");
     this.contactsDisplay.classList.toggle("hidden");
     this.editContactForm.classList.toggle("hidden");
-    this.editContactForm.innerHTML = editTemplate({...this.currentContact});
+
+    // pass two args:
+    // 1. tags that are in this.currentContact.tags => selectedTags
+    // 2. tags that are NOT in selectedTags, but are in this.allTags; => notSelectedTags
+
+    let unselectedTags = this.allTags.filter(tag => !this.currentContact.tags.includes(tag));
+
+    this.editContactForm.innerHTML = editTemplate({
+      ...this.currentContact, 
+      unselectedTags,
+    });
   }
+
+  
 
   async editContact(values) {
     let edited = await fetch(`http://localhost:3000/api/contacts/${this.currentContact.id}`, {
@@ -168,9 +192,10 @@ class ContactManager {
     return edited.ok;
   }
 
+  // event handlers
+
   async submitUpdatedContact(e) {
     try {
-      e.preventDefault();
       if (!e.target.classList.contains("submit-btn")) return;
   
       let form = e.target.parentNode;
@@ -180,7 +205,7 @@ class ContactManager {
       let edited = await this.editContact(formValues);
   
       if (edited) {
-        await this.displayContacts();
+        this.displayContacts();
         this.editContactForm.classList.toggle("hidden");
         this.utilitiesBar.classList.toggle("hidden");
         this.contactsDisplay.classList.toggle("hidden");
@@ -194,18 +219,25 @@ class ContactManager {
 
   displayNewContactForm(e) {
     e.preventDefault();
+
+    let newContactHandlebar = document.getElementById("new-contact-template");
+    let newContactTemplate = Handlebars.compile(newContactHandlebar.innerHTML);
+
+    this.newContactForm.innerHTML = newContactTemplate({allTags: this.allTags});
+
     this.utilitiesBar.classList.toggle("hidden");
     this.contactsDisplay.classList.toggle("hidden");
     this.newContactForm.classList.toggle("hidden");
   }
 
   handleCancelButton(e) {
-    e.preventDefault();
+    // e.preventDefault();
     if (!e.target.classList.contains("cancel-btn")) return;
 
-    e.currentTarget.classList.toggle("hidden");
-    this.utilitiesBar.classList.toggle("hidden");
-    this.contactsDisplay.classList.toggle("hidden");
+    console.log(e.currentTarget);
+    e.currentTarget.classList.add("hidden");
+    this.utilitiesBar.classList.remove("hidden");
+    this.contactsDisplay.classList.remove("hidden");
   }
 
   async addContact(values) {
@@ -224,7 +256,6 @@ class ContactManager {
   }
 
   async submitNewContact(e) {
-    e.preventDefault();
     if (!e.target.classList.contains("submit-btn")) return;
 
     let form = e.target.parentNode;
@@ -251,20 +282,11 @@ class ContactManager {
     this.tagList.classList.add("hidden");
   }
 
-  addNewTag(e) {
-    e.preventDefault();
-    if (!e.target.classList.contains("add-tag")) return;
-
-    console.log("clicked on tag");
-    // add a pop up input here to enter a new tag
-    // update taglist & display
-  }
-
-  async searchOnTag(e) {
+  searchOnTag(e) {
     let tag = e.target.innerText;
     this.searchBar.value = `:${tag}`;
 
-    await this.displayContacts();
+    this.displayContacts();
   }
 
 }

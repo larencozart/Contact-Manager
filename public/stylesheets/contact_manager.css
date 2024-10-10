@@ -129,7 +129,7 @@ main {
   display: none;
 }
 
-#form-header {
+.form-header {
   text-align: center;
   font-size: 30px;
   font-weight: 500;
@@ -138,14 +138,18 @@ main {
   margin: 40px 0 20px;
 }
 
-#form-display label {
+/* .form-display {
+  
+} */
+
+.form-display label {
   display: inline-block;
   font-size: 14px;
   font-weight: bolder;
   margin-left: 20px;
 }
 
-#form-display input {
+.form-display input {
   font-size: 14px;
   color: #555;
   background-color: #fff;
@@ -229,6 +233,28 @@ main {
 .add-tag:hover {
   background-color: rgb(162, 72, 72);
   color: #fff;
+}
+
+.tag-selection {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  margin-top: 20px;
+  margin-bottom: 30px;
+  vertical-align: top;
+}
+
+.tag-selection label {
+  width: 90%;
+  margin-left: -20px;
+  margin-top: -20px;
+  
+}
+
+.tag-selection input[type=checkbox] {
+  align-items: start;
+  width: 10%;
+  height: 16px;
 }
 
 footer {
