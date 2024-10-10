@@ -10,32 +10,51 @@ class ContactManager {
     this.newContactForm = document.getElementById('new-contact');
     this.tagDropdown = document.getElementById('tag-dropdown');
     this.newTagForm = document.getElementById('new-tag');
-    this.tagList = null;
+
     this.contacts = [];
-    this.currentContact = null;
     this.allTags = [];
+    this.tagList = null;
+    this.currentContact = null;
 
-    this.renderHomePage();
+    this.displayUI();
+    this.attachListeners();
   }
 
-  attachListeners() {
-    this.searchBar.addEventListener("input", this.displayContacts.bind(this));
-    this.contactsDisplay.addEventListener("click", this.handleDeleteButton.bind(this));
-
-    this.contactsDisplay.addEventListener("click", this.displayEditForm.bind(this));
-    this.editContactForm.addEventListener("click", this.submitUpdatedContact.bind(this));
-    this.editContactForm.addEventListener("click", this.handleCancelButton.bind(this));
-
-    this.addContactButton.addEventListener("click", this.displayNewContactForm.bind(this));
-    this.newContactForm.addEventListener("click", this.submitNewContact.bind(this));
-    this.newContactForm.addEventListener("click", this.handleCancelButton.bind(this));
-
-    this.tagDropdown.addEventListener("mouseover", this.displayTagList.bind(this));
-    this.tagDropdown.addEventListener("mouseleave", this.hideTagList.bind(this));
-
-    this.tagList.addEventListener("click", this.searchOnTag.bind(this));
+  // api iteractions
+  async fetchContacts() {
+    let response = await fetch("http://localhost:3000/api/contacts");
+    this.contacts = await response.json();
   }
 
+  async editContact(data) {
+    let edited = await fetch(`http://localhost:3000/api/contacts/${this.currentContact.id}`, {
+      method: "PUT",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        id: this.currentContact.id,
+        ...data
+      })
+    });
+
+    return edited.ok;
+  }
+
+  async deleteContact(id) {
+    let deleted = await fetch(`http://localhost:3000/api/contacts/${id}`, { method: 'DELETE' });
+    return deleted.ok;
+  }
+
+  async addContact(data) {
+    let edited = await fetch(`http://localhost:3000/api/contacts/`, {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    return edited.ok;
+  }
+
+  // ui display
   createTagList() {
     let tagListHandlebar = document.getElementById('tag-list-template');
     let tagListTemplate = Handlebars.compile(tagListHandlebar.innerHTML);
@@ -46,13 +65,20 @@ class ContactManager {
 
   updateTagsProperty() {
     this.contacts.forEach(contact => {
-      contact.tags = contact.tags ? contact.tags.split(",") : [];
+      let tagsProperty = contact.tags;
+
+      if (Array.isArray(tagsProperty)) {
+        contact.tags = tagsProperty.filter(tag => tag.trim() !== "");
+      } else {
+        contact.tags = contact.tags ? contact.tags.replace(" ", "").split(",") : [];
+      }
+
       contact.tagsPresent = contact.tags.length > 0;
     });
   }
 
   getAllTags() {
-    let tags = this.contacts.map(contact => contact.tags).flat();
+    let tags = this.contacts.map(contact => contact.tags).flat()
     this.allTags = Array.from(new Set(tags));
   }
 
@@ -85,20 +111,6 @@ class ContactManager {
     } 
   }
 
-  async fetchContacts() {
-    let response = await fetch("http://localhost:3000/api/contacts");
-    this.contacts = await response.json();
-  }
-
-  async renderHomePage() {  // figure out a better name for this function
-    await this.fetchContacts();
-    this.updateTagsProperty();
-    this.getAllTags();
-    this.createTagList();
-    this.displayContacts();
-    this.attachListeners();
-  }
-
   displayContacts() {
     let searchQuery = this.searchBar.value;
     let filteredContacts = this.filterContacts(searchQuery);
@@ -126,26 +138,47 @@ class ContactManager {
     return contact ? contact : null;
   }
 
-  async handleDeleteButton(e) {
-    e.preventDefault();
-    if (!e.target.classList.contains("delete-btn")) return;
-
-    if (confirm('Are you sure you want to delete this contact?')) {
-      let contactListItem = e.target.parentNode;
-      this.currentContact = this.findContact(contactListItem);
-      let deleted = await this.deleteContact(this.currentContact.id);
-      if (deleted) {
-        this.displayContacts();
-      } else {
-        console.log("delete action failed");
-        return;
-      }
-    }
+  displayTagList() {
+    this.tagList.classList.remove("hidden");
   }
 
-  async deleteContact(id) {
-    let deleted = await fetch(`http://localhost:3000/api/contacts/${id}`, { method: 'DELETE' });
-    return deleted.ok;
+  hideTagList() {
+    this.tagList.classList.add("hidden");
+  }
+
+  searchOnTag(e) {
+    let tag = e.target.innerText;
+    this.searchBar.value = `:${tag}`;
+
+    this.displayUI();
+  }
+
+  // event handlers
+
+  attachListeners() {
+    this.searchBar.addEventListener("input", this.displayUI.bind(this));
+    this.contactsDisplay.addEventListener("click", this.handleDeleteButton.bind(this));
+
+    this.contactsDisplay.addEventListener("click", this.displayEditForm.bind(this));
+    this.editContactForm.addEventListener("click", this.handleUpdatedContact.bind(this));
+    this.editContactForm.addEventListener("click", this.handleCancelButton.bind(this));
+
+    this.addContactButton.addEventListener("click", this.displayNewContactForm.bind(this));
+    this.newContactForm.addEventListener("click", this.handleNewContact.bind(this));
+    this.newContactForm.addEventListener("click", this.handleCancelButton.bind(this));
+
+    this.tagDropdown.addEventListener("mouseover", this.displayTagList.bind(this));
+    this.tagDropdown.addEventListener("mouseleave", this.hideTagList.bind(this));
+
+    this.tagList.addEventListener("click", this.searchOnTag.bind(this));
+  }
+
+  async displayUI() {
+    await this.fetchContacts();
+    this.updateTagsProperty();
+    this.getAllTags();
+    this.createTagList();
+    this.displayContacts();
   }
 
   displayEditForm(e) {
@@ -162,59 +195,12 @@ class ContactManager {
     this.contactsDisplay.classList.toggle("hidden");
     this.editContactForm.classList.toggle("hidden");
 
-    // pass two args:
-    // 1. tags that are in this.currentContact.tags => selectedTags
-    // 2. tags that are NOT in selectedTags, but are in this.allTags; => notSelectedTags
-
     let unselectedTags = this.allTags.filter(tag => !this.currentContact.tags.includes(tag));
 
     this.editContactForm.innerHTML = editTemplate({
       ...this.currentContact, 
       unselectedTags,
     });
-  }
-
-  
-
-  async editContact(values) {
-    let edited = await fetch(`http://localhost:3000/api/contacts/${this.currentContact.id}`, {
-      method: "PUT",
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: this.currentContact.id,
-        full_name: values[0],
-        email: values[1],
-        phone_number: values[2],
-        tags: values[3]
-      })
-    });
-
-    return edited.ok;
-  }
-
-  // event handlers
-
-  async submitUpdatedContact(e) {
-    try {
-      if (!e.target.classList.contains("submit-btn")) return;
-  
-      let form = e.target.parentNode;
-      let formValues = Array.from(form.getElementsByTagName("input"))
-                             .map(input => input.value);
-  
-      let edited = await this.editContact(formValues);
-  
-      if (edited) {
-        this.displayContacts();
-        this.editContactForm.classList.toggle("hidden");
-        this.utilitiesBar.classList.toggle("hidden");
-        this.contactsDisplay.classList.toggle("hidden");
-      } else {
-        throw new Error("Failed to make PUT request");
-      }
-    } catch (error) {
-      console.error(error);
-    }
   }
 
   displayNewContactForm(e) {
@@ -231,64 +217,89 @@ class ContactManager {
   }
 
   handleCancelButton(e) {
-    // e.preventDefault();
     if (!e.target.classList.contains("cancel-btn")) return;
 
-    console.log(e.currentTarget);
     e.currentTarget.classList.add("hidden");
     this.utilitiesBar.classList.remove("hidden");
     this.contactsDisplay.classList.remove("hidden");
+    this.searchBar.value = "";
   }
 
-  async addContact(values) {
-    let edited = await fetch(`http://localhost:3000/api/contacts/`, {
-      method: "POST",
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        full_name: values[0],
-        email: values[1],
-        phone_number: values[2],
-        tags: values[3]
-      })
-    });
-
-    return edited.ok;
-  }
-
-  async submitNewContact(e) {
-    if (!e.target.classList.contains("submit-btn")) return;
-
-    let form = e.target.parentNode;
-    let formValues = Array.from(form.getElementsByTagName("input"))
-                             .map(input => input.value);
-
-    let added = await this.addContact(formValues);  
+  processedFormValues(form) {   
+    let inputs = Array.from(form.getElementsByTagName('input'));                   
+    let textValues = inputs.filter(input => input.getAttribute("type") === "text")
+                           .map(input => input.value); 
+    let checkedTags = inputs.filter(input => input.getAttribute("type") === "checkbox" && input.checked)
+                            .map(input => input.value);
     
-    if (added) {
-      await this.displayContacts();
-      this.newContactForm.classList.toggle("hidden");
-      this.utilitiesBar.classList.toggle("hidden");
-      this.contactsDisplay.classList.toggle("hidden");
-    } else {
-      throw new Error("Failed to make PUT request");
+    let newTag = textValues[3];                          
+    let tags = checkedTags.concat(newTag);
+
+    return {
+      // id: this.currentContact.id,
+      full_name: textValues[0],
+      email: textValues[1],
+      phone_number: textValues[2],
+      tags: tags
+    }              
+  }
+
+  async handleUpdatedContact(e) {
+    try {
+      if (!e.target.classList.contains("submit-btn")) return;
+  
+      let form = e.target.parentNode;
+      let data = this.processedFormValues(form);
+      let edited = await this.editContact(data);
+  
+      if (edited) {
+        this.displayUI();
+        this.editContactForm.classList.toggle("hidden");
+        this.utilitiesBar.classList.toggle("hidden");
+        this.contactsDisplay.classList.toggle("hidden");
+        this.searchBar.value = "";
+      } else {
+        throw new Error("Failed to make PUT request");
+      }
+    } catch (error) {
+      console.error(error);
     }
   }
 
-  displayTagList() {
-    this.tagList.classList.remove("hidden");
+  async handleNewContact(e) {
+    if (!e.target.classList.contains("submit-btn")) return;
+
+    let form = e.target.parentNode;
+    let data = this.processedFormValues(form);
+    let added = await this.addContact(data);  
+    
+    if (added) {
+      this.displayUI();
+      this.newContactForm.classList.toggle("hidden");
+      this.utilitiesBar.classList.toggle("hidden");
+      this.contactsDisplay.classList.toggle("hidden");
+      this.searchBar.value = "";
+    } else {
+      throw new Error("Failed to make POST request");
+    }
   }
 
-  hideTagList() {
-    this.tagList.classList.add("hidden");
+  async handleDeleteButton(e) {
+    e.preventDefault();
+    if (!e.target.classList.contains("delete-btn")) return;
+
+    if (confirm('Are you sure you want to delete this contact?')) {
+      let contactListItem = e.target.parentNode;
+      this.currentContact = this.findContact(contactListItem);
+      let deleted = await this.deleteContact(this.currentContact.id);
+      if (deleted) {
+        this.displayUI();
+      } else {
+        console.log("delete action failed");
+        return;
+      }
+    }
   }
-
-  searchOnTag(e) {
-    let tag = e.target.innerText;
-    this.searchBar.value = `:${tag}`;
-
-    this.displayContacts();
-  }
-
 }
 
 document.addEventListener("DOMContentLoaded", () => {
