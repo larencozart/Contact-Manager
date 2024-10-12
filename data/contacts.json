@@ -1,55 +1,23 @@
 [
   {
     "id": 1,
-    "full_name": "Naveed Fida **",
-    "email": "nf@example.com",
-    "phone_number": "12345678901",
-    "tags": [
-      "work",
-      "friend",
-      ""
-    ]
+    "full_name": "Laren Cozart",
+    "email": "lc@example.com",
+    "phone_number": "1-234-567-8901",
+    "tags": "LaunchSchool, student"
   },
   {
     "id": 2,
     "full_name": "Victor Reyes",
     "email": "vpr@example.com",
-    "phone_number": "09876543210",
-    "tags": [
-      "work",
-      "friend",
-      "LaunchSchool",
-      ""
-    ]
+    "phone_number": "0-987-654-3210",
+    "tags": "LaunchSchool, TA"
   },
   {
     "id": 3,
     "full_name": "Pete Hanson",
     "email": "ph@example.com",
-    "phone_number": "54321098761",
-    "tags": ""
-  },
-  {
-    "full_name": "Laren Cozart",
-    "phone_number": "9545484449",
-    "email": "larencozart@gmail.com",
-    "tags": [
-      "LaunchSchool",
-      "newTag",
-      ""
-    ],
-    "id": 4
-  },
-  {
-    "full_name": "BRIAN ERIC COZART",
-    "phone_number": "8704509647",
-    "email": "new@email.com",
-    "tags": [
-      "friend",
-      "hoosbond",
-      "newTag",
-      ""
-    ],
-    "id": 5
+    "phone_number": "1-432-109-8761",
+    "tags": "LaunchSchool, TA"
   }
 ]

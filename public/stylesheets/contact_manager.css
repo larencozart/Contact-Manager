@@ -162,6 +162,10 @@ main {
   margin-bottom: 20px;
 }
 
+/* .form-display input:invalid {
+  border: 1px solid red;
+} */
+
 .submit-btn, .cancel-btn {
   display: inline-block;
   font-size: 18px;
@@ -192,6 +196,23 @@ main {
   padding: 5px;
 }
 
+#clear-search {
+  display: inline-block;
+  vertical-align: top;
+  color: #555;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 5px;
+  cursor: pointer;
+}
+
+#clear-search:hover {
+  background-color: rgb(210, 121, 121);
+}
+
 #tag-dropdown {
   display: inline-block;
   vertical-align: top;
@@ -202,6 +223,7 @@ main {
   font-size: 14px;
   font-weight: 400;
   padding: 5px;
+  cursor: pointer;
 }
 
 #tag-list {

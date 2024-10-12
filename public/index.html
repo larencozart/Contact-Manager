@@ -6,7 +6,6 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Contact Manager</title>
   <link rel="stylesheet" href="/stylesheets/contact_manager.css">
-  <script src="/javascripts/jquery.js"></script>
   <script src="/javascripts/handlebars.js"></script>
   <script src="/javascripts/contact_manager.js"></script>
 </head>
@@ -18,120 +17,121 @@
   <main>
   
     <section id="utilities-bar">
-      <!-- Add Contact Button & Search Bar-->
       <a id="add-contact-btn">Add Contact</a>
       <input type="text" id="search-bar" name="search-bar" placeholder="Search">
-      <a id="tag-dropdown">Tags</a>
+      <a id="clear-search">Clear</a>
+      <a id="tag-dropdown"></a>
     </section>
       
     <section id="contacts-display">
     </section>
 
-    <section id="new-contact" class="hidden">
-    </section>
-
-    <section id="edit-contact" class="hidden">
-    </section>
-
-    <!-- <section id="new-tag" class="hidden">
-      <form class="form-display">
-        <h1 class="form-header">Add Tag</h1>
-        <dl>
-          <dt><label>Please enter a new tag name</label></dt>
-          <dd><input type="text"></dd>
-        </dl>
-        <a class="submit-btn">Submit</a>
-        <a class="cancel-btn">Cancel</a>
+    <section id="new-contact-section" class="hidden">
+      <h1 class="form-header">Create Contact</h1>
+      <form id="new-contact-form" class="form-display">
       </form>
-    </section> -->
+    </section>
+
+    <section id="edit-contact-section" class="hidden">
+      <h1 class="form-header">Edit Contact</h1>
+      <form id="edit-contact-form" class="form-display">
+      </form>
+    </section>
 
     <script id="contact-template" type='text/x-handlebars'>
         {{#if contactsPresent}}
-        <ul id="contact-list">
-          {{#each contacts}}
-          <li class="contact">
-            <h1>{{full_name}}</h2>
-            <dl class="contact-info">
-              <dt>Phone Number:</dt>
-              <dd>{{phone_number}}</dd>
-              <dt>Email:</dt>
-              <dd>{{email}}</dd>
-              {{#if tagsPresent}}
-                {{#each tags}}
-                <p class="tag">{{this}}</p>
-                {{/each}}
-              {{/if}}
-            </dl>
-            <a class="edit-btn">Edit</a>
-            <a class="delete-btn">Delete</a>
-          </li>
-          {{/each}}
+          {{#if contactsFound}}
+          <ul id="contact-list">
+            {{#each contacts}}
+            <li id="{{id}}" class="contact">
+              <h1>{{full_name}}</h2>
+              <dl class="contact-info">
+                <dt>Phone Number:</dt>
+                <dd>{{phone_number}}</dd>
+                <dt>Email:</dt>
+                <dd>{{email}}</dd>
+                {{#if tagsPresent}}
+                  {{#each tags}}
+                  <p class="tag">{{this}}</p>
+                  {{/each}}
+                {{/if}}
+              </dl>
+              <a class="edit-btn">Edit</a>
+              <a class="delete-btn">Delete</a>
+            </li>
+            {{/each}}
+            {{else}}
+            <p id=no-contacts>No contacts with <strong>"{{searchQuery}}"</strong> found.</p>
+            {{/if}}
         {{else}}
         <p id=no-contacts>No contacts yet. Go ahead and add one!</p>
         {{/if}}
     </script>
 
     <script id="new-contact-template" type="text/x-handlebars">
-      <h1 class="form-header">Create Contact</h1>
-      <form class="form-display">
-        <dl>
-          <dt><label>Full Name:</label></dt>
-          <dd><input type="text"></dd>
-          <dt><label>Email Address:</label></dt>
-          <dd><input type="text"></dd>
-          <dt><label>Phone Number:</label></dt>
-          <dd><input type="text"></dd>
-          <dt><label>Tags:</label></dt>
-          <dd>
-            {{#each allTags}}
-              <div class="tag-selection">
-                <input type="checkbox" name="tags" value="{{this}}">
-                <label for="{{this}}">{{this}}</label>  
-              </div>
-            {{/each}}
-          </dd>
-          <dt><label>Add a new tag</label></dt>
-          <dd><input type="text"></dd>
-        </dl>
-        <a class="submit-btn">Submit</a>
-        <a class="cancel-btn">Cancel</a>
-      </form>
+      <dl>
+        <dt><label>Full Name:</label></dt>
+        <dd><input type="text" name="full_name" required></dd>
+        <dt><label>Email Address:</label></dt>
+        <dd><input type="email" name="email"></dd>
+        <dt><label>Phone Number:<br />
+          <small>Format: 123-456-7890 or 1-123-456-789</small>
+            </label>
+        </dt>
+        <dd><input type="tel" name="phone_number" pattern="(\d-)?[0-9]{3}-[0-9]{3}-[0-9]{4}"></dd>
+        <dt><label>Tags:</label></dt>
+        <dd>
+          {{#each allTags}}
+            <div class="tag-selection">
+              <input type="checkbox" name="tags" value="{{this}}">
+              <label for="{{this}}">{{this}}</label>  
+            </div>
+          {{/each}}
+        </dd>
+        <dt><label>Add a new tag</label></dt>
+        <dd><input type="text" name="new-tag"></dd>
+      </dl>
+      <button class="submit-btn" type="submit">Submit</button>
+      <button class="cancel-btn" type="button">Cancel</button>
     </script>
 
     <script id="edit-template" type="text/x-handlebars">
-      <h1 class="form-header">Edit Contact</h1>
-      <form class="form-display">
-        <dl>
-          <dt><label>Full Name:</label></dt>
-          <dd><input type="text" value="{{full_name}}"></dd>
-          <dt><label>Email Address:</label></dt>
-          <dd><input type="text" value="{{email}}"></dd>
-          <dt><label>Phone Number:</label></dt>
-          <dd><input type="text" value="{{phone_number}}"></dd>
-          <dt><label>Tags:</label></dt>
-          <dd>
-            {{#each tags}}
-              <div class="tag-selection">
-                <input type="checkbox" name="tags" value="{{this}}" checked>
-                <label for="{{this}}">{{this}}</label>  
-              </div>
-            {{/each}}
-            {{#each unselectedTags}}  
-              <div class="tag-selection">
-                <input type="checkbox" name="tags" value="{{this}}">
-                <label for="{{this}}">{{this}}</label>  
-              </div>
-            {{/each}}
-          </dd>
-          <dt><label>Add a new tag</label></dt>
-          <dd><input type="text"></dd>
-        </dl>
-        <a class="submit-btn">Submit</a>
-        <a class="cancel-btn">Cancel</a>
-      </form>
+      <dl>
+        <dt><label>Full Name:</label></dt>
+        <dd><input type="text" name="full_name" value="{{full_name}}" required></dd>
+        <dt><label>Email Address:</label></dt>
+        <dd><input type="email" name="email" value="{{email}}"></dd>
+        <dt><label>Phone Number:<br />
+          <small>Format: 123-456-7890 or 1-123-456-789</small>
+            </label>
+        </dt>
+        <dd><input type="tel" name="phone_number" value="{{phone_number}}" 
+                   pattern="(\d-)?[0-9]{3}-[0-9]{3}-[0-9]{4}">
+        </dd>
+        <dt><label>Tags:</label></dt>
+        <dd>
+          {{#each tags}}
+            <div class="tag-selection">
+              <input type="checkbox" name="tags" value="{{this}}" checked>
+              <label for="{{this}}">{{this}}</label>  
+            </div>
+          {{/each}}
+          {{#each unselectedTags}}  
+            <div class="tag-selection">
+              <input type="checkbox" name="tags" value="{{this}}">
+              <label for="{{this}}">{{this}}</label>  
+            </div>
+          {{/each}}
+        </dd>
+        <dt><label>Add a new tag</label></dt>
+        <dd><input type="text" name="new-tag"></dd>
+      </dl>
+      <button class="submit-btn" type="submit">Submit</button>
+      <button class="cancel-btn" type="button">Cancel</button>
     </script>
 
     <script id="tag-list-template" type="text/x-handlebars">
+      Search by Tag:
       <ul id="tag-list" class="hidden">
         {{#each tags}}
         <li class="tag-list-item">{{this}}</li>

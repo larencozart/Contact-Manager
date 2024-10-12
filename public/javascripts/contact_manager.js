@@ -5,9 +5,12 @@ class ContactManager {
     this.contactsDisplay = document.getElementById('contacts-display');
     this.utilitiesBar = document.getElementById('utilities-bar');
     this.searchBar = document.getElementById('search-bar');
+    this.clearSearchButton = document.getElementById('clear-search');
     this.addContactButton = document.getElementById('add-contact-btn');
-    this.editContactForm = document.getElementById('edit-contact');
-    this.newContactForm = document.getElementById('new-contact');
+    this.editContactSection = document.getElementById('edit-contact-section');
+    this.editContactForm = document.getElementById('edit-contact-form');
+    this.newContactSection = document.getElementById('new-contact-section');
+    this.newContactForm = document.getElementById('new-contact-form');
     this.tagDropdown = document.getElementById('tag-dropdown');
     this.newTagForm = document.getElementById('new-tag');
 
@@ -59,8 +62,9 @@ class ContactManager {
     let tagListHandlebar = document.getElementById('tag-list-template');
     let tagListTemplate = Handlebars.compile(tagListHandlebar.innerHTML);
 
-    this.tagDropdown.insertAdjacentHTML("beforeend", tagListTemplate({tags: this.allTags}))
-    this.tagList = this.tagDropdown.lastElementChild;
+    this.tagDropdown.innerHTML = tagListTemplate({tags: this.allTags});
+    this.tagList = this.tagDropdown.lastElementChild; 
+    this.tagList.addEventListener("click", this.searchOnTag.bind(this));
   }
 
   updateTagsProperty() {
@@ -120,22 +124,17 @@ class ContactManager {
 
     this.contactsDisplay.innerHTML = contactTemplate({
       contacts: filteredContacts,
-      contactsPresent: (filteredContacts.length > 0)
+      contactsPresent: (this.contacts.length > 0),
+      contactsFound: (filteredContacts.length > 0),
+      searchQuery: searchQuery,
     });
   }
 
   findContact(contactItem) {
-    let name = contactItem.firstElementChild.innerText.trim();
-    let phoneNumber = contactItem.getElementsByTagName('dd')[0].innerText;
-    let email = contactItem.getElementsByTagName('dd')[1].innerText;
-
     let contact = this.contacts.find(contact => {
-      return (contact.full_name === name) &&
-             (contact.phone_number === phoneNumber) &&
-             (contact.email === email);
+      return contactItem.id === contact.id.toString();
     });
-
-    return contact ? contact : null;
+    return contact;
   }
 
   displayTagList() {
@@ -157,20 +156,19 @@ class ContactManager {
 
   attachListeners() {
     this.searchBar.addEventListener("input", this.displayUI.bind(this));
+    this.clearSearchButton.addEventListener("click", this.handleClearSearch.bind(this));
     this.contactsDisplay.addEventListener("click", this.handleDeleteButton.bind(this));
 
     this.contactsDisplay.addEventListener("click", this.displayEditForm.bind(this));
-    this.editContactForm.addEventListener("click", this.handleUpdatedContact.bind(this));
+    this.editContactForm.addEventListener("submit", this.handleUpdatedContact.bind(this));
     this.editContactForm.addEventListener("click", this.handleCancelButton.bind(this));
 
     this.addContactButton.addEventListener("click", this.displayNewContactForm.bind(this));
-    this.newContactForm.addEventListener("click", this.handleNewContact.bind(this));
+    this.newContactForm.addEventListener("submit", this.handleNewContact.bind(this));
     this.newContactForm.addEventListener("click", this.handleCancelButton.bind(this));
 
     this.tagDropdown.addEventListener("mouseover", this.displayTagList.bind(this));
     this.tagDropdown.addEventListener("mouseleave", this.hideTagList.bind(this));
-
-    this.tagList.addEventListener("click", this.searchOnTag.bind(this));
   }
 
   async displayUI() {
@@ -191,9 +189,9 @@ class ContactManager {
     let editHandlebar = document.getElementById('edit-template');
     let editTemplate = Handlebars.compile(editHandlebar.innerHTML);
 
-    this.utilitiesBar.classList.toggle("hidden");
-    this.contactsDisplay.classList.toggle("hidden");
-    this.editContactForm.classList.toggle("hidden");
+    this.utilitiesBar.classList.add("hidden");
+    this.contactsDisplay.classList.add("hidden");
+    this.editContactSection.classList.remove("hidden");
 
     let unselectedTags = this.allTags.filter(tag => !this.currentContact.tags.includes(tag));
 
@@ -201,6 +199,8 @@ class ContactManager {
       ...this.currentContact, 
       unselectedTags,
     });
+
+    // get form element here and add listener here
   }
 
   displayNewContactForm(e) {
@@ -211,50 +211,50 @@ class ContactManager {
 
     this.newContactForm.innerHTML = newContactTemplate({allTags: this.allTags});
 
-    this.utilitiesBar.classList.toggle("hidden");
-    this.contactsDisplay.classList.toggle("hidden");
-    this.newContactForm.classList.toggle("hidden");
+    this.utilitiesBar.classList.add("hidden");
+    this.contactsDisplay.classList.add("hidden");
+    this.newContactSection.classList.remove("hidden");
+  }
+
+  handleClearSearch(e) {
+    this.searchBar.value = "";
+    this.displayUI();
   }
 
   handleCancelButton(e) {
     if (!e.target.classList.contains("cancel-btn")) return;
 
-    e.currentTarget.classList.add("hidden");
+    e.currentTarget.parentNode.classList.add("hidden");
     this.utilitiesBar.classList.remove("hidden");
     this.contactsDisplay.classList.remove("hidden");
     this.searchBar.value = "";
   }
 
-  processedFormValues(form) {   
+  processFormValues(form, formData) {   
     let inputs = Array.from(form.getElementsByTagName('input'));                   
-    let textValues = inputs.filter(input => input.getAttribute("type") === "text")
-                           .map(input => input.value); 
     let checkedTags = inputs.filter(input => input.getAttribute("type") === "checkbox" && input.checked)
                             .map(input => input.value);
-    
-    let newTag = textValues[3];                          
-    let tags = checkedTags.concat(newTag);
+    let newTag = formData.get("new-tag").trim();                          
+    let tags = newTag ? checkedTags.concat(newTag) : checkedTags;
 
     return {
-      // id: this.currentContact.id,
-      full_name: textValues[0],
-      email: textValues[1],
-      phone_number: textValues[2],
+      full_name: formData.get("full_name"),
+      email: formData.get("email"),
+      phone_number: formData.get("phone_number"),
       tags: tags
     }              
   }
 
   async handleUpdatedContact(e) {
     try {
-      if (!e.target.classList.contains("submit-btn")) return;
-  
-      let form = e.target.parentNode;
-      let data = this.processedFormValues(form);
+      e.preventDefault();
+      let form = e.currentTarget;
+      let data = this.processFormValues(form, new FormData(form));
       let edited = await this.editContact(data);
   
       if (edited) {
         this.displayUI();
-        this.editContactForm.classList.toggle("hidden");
+        this.editContactSection.classList.toggle("hidden");
         this.utilitiesBar.classList.toggle("hidden");
         this.contactsDisplay.classList.toggle("hidden");
         this.searchBar.value = "";
@@ -267,15 +267,16 @@ class ContactManager {
   }
 
   async handleNewContact(e) {
-    if (!e.target.classList.contains("submit-btn")) return;
+    e.preventDefault();
 
-    let form = e.target.parentNode;
-    let data = this.processedFormValues(form);
+    let form = e.currentTarget;
+    let data = this.processFormValues(form, new FormData(form));
+
     let added = await this.addContact(data);  
     
     if (added) {
       this.displayUI();
-      this.newContactForm.classList.toggle("hidden");
+      this.newContactSection.classList.toggle("hidden");
       this.utilitiesBar.classList.toggle("hidden");
       this.contactsDisplay.classList.toggle("hidden");
       this.searchBar.value = "";
@@ -286,12 +287,14 @@ class ContactManager {
 
   async handleDeleteButton(e) {
     e.preventDefault();
+
     if (!e.target.classList.contains("delete-btn")) return;
 
     if (confirm('Are you sure you want to delete this contact?')) {
       let contactListItem = e.target.parentNode;
       this.currentContact = this.findContact(contactListItem);
       let deleted = await this.deleteContact(this.currentContact.id);
+
       if (deleted) {
         this.displayUI();
       } else {
