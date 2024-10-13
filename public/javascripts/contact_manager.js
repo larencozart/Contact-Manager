@@ -1,5 +1,3 @@
-// imports
-
 class ContactManager {
    constructor() {
     this.contactsDisplay = document.getElementById('contacts-display');
@@ -199,8 +197,6 @@ class ContactManager {
       ...this.currentContact, 
       unselectedTags,
     });
-
-    // get form element here and add listener here
   }
 
   displayNewContactForm(e) {
